@@ -367,14 +367,18 @@ namespace HomeLibrary
 
         private void cbAuthor_DropDown(object sender, EventArgs e)
         {
+            string currentText = cbAuthor.Text;
             cbAuthor.DataSource = 
                 db?.Authors.Select(a => a.Name).ToList();           // Заполняем элемент ComboBox списком имён всех авторов из базы даных.
+            cbAuthor.Text = currentText;
         }
 
         private void cbGenre_DropDown(object sender, EventArgs e)
         {
+            string currentText = cbGenre.Text;
             cbGenre.DataSource = 
                 db?.Genres.Select(g => g.Name).ToList();            // Заполняем элемент ComboBox списком всех жанров из базы даных.
+            cbGenre.Text = currentText;
         }
     }
 }
