@@ -34,6 +34,7 @@
             btnCreate = new Button();
             dataGridView1 = new DataGridView();
             panel2 = new Panel();
+            btnClearInfo = new Button();
             cbGenre = new ComboBox();
             rtbDescription = new RichTextBox();
             tbName = new TextBox();
@@ -97,6 +98,7 @@
             // panel2
             // 
             panel2.BorderStyle = BorderStyle.FixedSingle;
+            panel2.Controls.Add(btnClearInfo);
             panel2.Controls.Add(cbGenre);
             panel2.Controls.Add(btnDelete);
             panel2.Controls.Add(btnCreate);
@@ -113,6 +115,16 @@
             panel2.Name = "panel2";
             panel2.Size = new Size(250, 356);
             panel2.TabIndex = 6;
+            // 
+            // btnClearInfo
+            // 
+            btnClearInfo.Location = new Point(165, 6);
+            btnClearInfo.Name = "btnClearInfo";
+            btnClearInfo.Size = new Size(75, 23);
+            btnClearInfo.TabIndex = 11;
+            btnClearInfo.Text = "Очистить";
+            btnClearInfo.UseVisualStyleBackColor = true;
+            btnClearInfo.Click += btnClearInfo_Click;
             // 
             // cbGenre
             // 
@@ -188,11 +200,11 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            label1.Location = new Point(3, 0);
+            label1.Location = new Point(3, 2);
             label1.Name = "label1";
-            label1.Size = new Size(143, 25);
+            label1.Size = new Size(139, 25);
             label1.TabIndex = 0;
-            label1.Text = "Текущая книга:";
+            label1.Text = "Текущая книга";
             // 
             // panel3
             // 
@@ -250,5 +262,6 @@
         private Panel panel3;
         private Label label6;
         private ComboBox cbGenre;
+        private Button btnClearInfo;
     }
 }

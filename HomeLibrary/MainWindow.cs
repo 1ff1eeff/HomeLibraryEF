@@ -14,7 +14,7 @@ namespace HomeLibrary
 
         protected override void OnLoad(EventArgs e)             // При загрузке формы.
         {
-            base.OnLoad(e);                                     
+            base.OnLoad(e);
 
             db = new HomeLibraryContext();                      // Инициализируем контекст для представления базы данных.
 
@@ -71,7 +71,7 @@ namespace HomeLibrary
             }
             else
             {
-                label6.Text = 
+                label6.Text =
                     "Соединение с базой данных установлено.";   // Если база данных существует, информируем пользователя об успешном соединении с ней.
             }
 
@@ -81,20 +81,17 @@ namespace HomeLibrary
 
             FillDataGridView(dataGridView1, db);                // Заполняем элемент DataGridView информацией из базы даных.
 
-            if (dataGridView1.RowCount > 0)                     // Если DataGridView содержит строки.
-            {
-                FillCurrentBook();                              // Заполняем элементы формы, предназначенные для хранения информации о выбранной книге.
-            }
-
-            cbAuthor.DataSource = 
+            cbAuthor.DataSource =
                 db.Authors.Select(a => a.Name).ToList();        // Помещаем все имена авторов из базы данных в элемент ComboBox.
-            cbGenre.DataSource = 
+            cbGenre.DataSource =
                 db.Genres.Select(g => g.Name).ToList();         // Помещаем все наименования жанров из базы данных в элемент ComboBox.
+
+            ClearCurrentBook();
         }
 
         protected override void OnClosing(CancelEventArgs e)    // При закрытии формы.
         {
-            base.OnClosing(e);                                  
+            base.OnClosing(e);
             db?.Dispose();                                      // Освобождаем ресурсы выделенные под контекст базы данных.
             db = null;                                          // Обнуляем контекст базы данных. 
         }
@@ -109,14 +106,14 @@ namespace HomeLibrary
             int selectedRowIndex = 0;                       // Переменная для хранения номера строки.
             if (dgv.CurrentCell is not null)                // Если активная ячейка существует.
             {
-                selectedRowIndex = 
+                selectedRowIndex =
                     dgv.SelectedRows[0].Index;              // Сохраняем номер выделенной строки в переменную.
             }
 
             List<BookInfo> booksList = [];                  // Объявляем и инициализируем список для хранения информации о книгах.
-            List<Genre> listGenres = 
+            List<Genre> listGenres =
                 db.Genres.Include(c => c.Books).ToList();   // Объявляем и инициализируем список для хранения жанров.
-            
+
             foreach (Book b in db.Books)                    // Для каждой книги в списке книг из базы данных.
             {
                 List<string> genres = new();                // Объявляем и инициализируем список для хранения названий жанров.
@@ -125,7 +122,7 @@ namespace HomeLibrary
                         if (book == b)                      // Если указанная книга совпадает с рассматриваемой в данный момент книгой.
                             genres.Add(genre.Name);         // Добавляем название жанра в список, предназначенный для хранения названий жанров текущей книги.
 
-                string genresInOneLine = 
+                string genresInOneLine =
                     string.Join(", ", [.. genres]);         // Преобразуем полученный список в строку, с разделителем: запятая и пробел после неё.
 
                 BookInfo selectedBook = new BookInfo();     // Объявляем и инициализируем экземпляр класса, предназначенного для хранения информации о книге. 
@@ -141,7 +138,7 @@ namespace HomeLibrary
             BindingSource source = new BindingSource();     // Объявляем и инициализируем компонент BindingSource.
             source.DataSource = booksList;                  // Указываем список с информацией о книгах, как источник данных.
             dgv.DataSource = source;                        // Привязываем созданный ранее компонент к элементу формы DataGridView.
-            
+
             dgv.Columns[0].Visible = false;                 // Скрываем первую колонку таблицы элемента формы DataGridView.
             dgv.Columns[1].HeaderText = "Название";         // Устанавливаем заголовок второй колонки.
             dgv.Columns[2].HeaderText = "Автор";            // Устанавливаем заголовок третьей колонки.
@@ -176,7 +173,7 @@ namespace HomeLibrary
         /// <returns> Экземпляр класса Author.</returns>
         private Author? FindAuthor(string name, HomeLibraryContext db)
         {
-            IQueryable<Author> authors = 
+            IQueryable<Author> authors =
                 db.Authors.Where(a => a.Name == name);      // Находим авторов в базе данных, с именем равным значению полученного параметра "name".
 
             Author? author = new();                         // Объявляем и инициализируем экземпляр класса Author, для хранения информации об авторе книги.
@@ -223,12 +220,23 @@ namespace HomeLibrary
         }
 
         /// <summary>
+        /// Очищаем элементы формы, предназначенные для хранения информации о выбранной книге.
+        /// </summary>
+        private void ClearCurrentBook()
+        {
+            tbName.Text = string.Empty;                         // Удаляем текст из элемента TextBox.
+            cbAuthor.Text = string.Empty;                       // Удаляем текст из элемента ComboBox.
+            cbGenre.Text = string.Empty;                        // Удаляем текст из элемента ComboBox.
+            rtbDescription.Text = string.Empty;                 // Удаляем текст из элемента RichTextBox.
+        }
+
+        /// <summary>
         /// Добавляем новую книгу в базу данных.
         /// </summary>
         private void CreateBook(HomeLibraryContext db)
         {
             if (!string.IsNullOrWhiteSpace(tbName.Text))            // Если элемент TextBox "tbName" на форме содержит текст.
-            { 
+            {
                 Author? author = new Author();                      // Объявляем и инициализируем экземпляр класса Author.
                 author = FindAuthor(cbAuthor.Text.ToString(), db);  // Находим автора в базе данных и устанавливаем в качестве значения.
 
@@ -261,14 +269,14 @@ namespace HomeLibrary
                 int? result = db?.SaveChanges();                                     // Сохраняем внесённые в базу данных изменения.
                 if (result > 0)
                 {
-                    label6.Text = "Информация о книге: \"" + book.Name + 
+                    label6.Text = "Информация о книге: \"" + book.Name +
                                   "\" добавлена в базу данных.";                    // Информируем пользоватаеля о добавлении записи в базу данных.
                 }
             }
             else
             {                                                                       // Иначе (если элемент TextBox "tbName" на форме не содержит текст).
                 label6.Text = "Поле \"Название\" должно быть заполнено!";           // Информируем пользоватаеля о проблеме.
-            }     
+            }
         }
 
         /// <summary>
@@ -282,7 +290,7 @@ namespace HomeLibrary
 
             Book? book = new Book();                                // Объявляем и инициализируем экземпляр класса Book. 
             book = FindSelectedBook();                              // Находим выбранную книгу в базе данных и устанавливаем в качестве значения. 
-            
+
             if (author is not null & book is not null)              // Если автор и книга определены.
             {
                 string? prevName = book.Name;                       // Сохраняем текущее наименование книги в переменную.
@@ -291,7 +299,7 @@ namespace HomeLibrary
 
                 List<string> allGenres = new List<string>();        // Объявляем и инициализируем список для хранения наименований жанров из базы данных. 
                 allGenres = [.. db?.Genres.Select(g => g.Name)];    // Помещаем все наименования жанров, найденные в базе данных, в список.
-         
+
                 List<string> genresString = new List<string>();     // Объявляем и инициализируем список для хранения наименований жанров. 
                 genresString = [.. cbGenre.Text.Split(", ")];       // Помещаем наименования жанров, указанные в элементе поле Text, элемента ComboBox, в список.
                 book.Genres.Clear();                                // Удаляем элементы из поля Genres.
@@ -307,12 +315,12 @@ namespace HomeLibrary
                     book.Genres.Add(db?.Genres.FirstOrDefault(
                                         g => g.Name == genre));     // Добавляем в поле Genres экземпляр жанра с именем равным текущему наименованию жанра.         
                 }
-                
+
                 book.Description = rtbDescription.Text;             // Устанавливаем значение поля "Description" равным значению поля Text элемента RichTextBox. 
                 dataGridView1.Update();                             // Обновляем элемент DataGridView.                
                 int? result = db?.SaveChanges();
                 if (result > 0)                                     // Сохраняем внесённые в базу данных изменения.
-                    label6.Text = "Информация о книге: \"" 
+                    label6.Text = "Информация о книге: \""
                                   + prevName + "\" обновлена.";     // Информируем пользователя о произведённой модификации.
             }
         }
@@ -328,12 +336,52 @@ namespace HomeLibrary
 
             if (book is not null)                                   // Если книга определена.
             {
-                db?.Books.Remove(book);                             // Удаляем экземпляр книги из базы данных.
+                db?.Books.Remove(book);                             // Удаляем книгу из талбицы Books.
+
                 int? result = db?.SaveChanges();                    // Сохраняем внесённые в базу данных изменения. 
                 if (result > 0)
-                    label6.Text = "Книга \"" + tbName.Text + 
-                                "\" удалена из базы данных.";       // Информируем пользователя об удалении записи из базы данных. 
+                    label6.Text = "Книга \"" + tbName.Text +
+                                "\" удалена из базы данных.";       // Информируем пользователя об удалении записи книги из базы данных. 
+
+                if (book.Author.Books.Count == 0)                   // Если в базе данных нет книг с данным автором.
+                {
+                    db.Authors.Remove(book.Author);                 // Удаляем автора из таблицы Authors.
+
+                    result = db?.SaveChanges();                     // Сохраняем внесённые в базу данных изменения. 
+                    if (result > 0)
+                    {
+                        // Информируем пользователя об удалении записи автора из базы данных. 
+                        label6.Text += " Автор \"" + book.Author.Name + "\" удалён из базы данных.";
+                    }
+                }
+
+                List<Genre> genresToDelete = new List<Genre>();
+
+                foreach (Genre g in db.Genres)                      // Рассмотрим записи жанров в базе данных.
+                {
+                    if (g.Books.Count == 0)                         // Если в базе данных нет книг с данным жанром.
+                    {
+                        genresToDelete.Add(g);
+                        db.Genres.Remove(g);                        // Удаляем жанр из таблицы Genres.
+                    }
+                }
+
+                result = db?.SaveChanges();                         // Сохраняем внесённые в базу данных изменения. 
+                                                                    
+                if (result > 0)
+                {
+                    // Информируем пользователя об удалении записи жанра из базы данных. 
+                    if (genresToDelete.Count == 1)
+                        label6.Text += " Жанр \"" + genresToDelete.First().Name + "\" удалён из базы данных.";
+
+                    // Информируем пользователя об удалении записей жанров из базы данных. 
+                    if (genresToDelete.Count > 1)
+                        label6.Text += " Жанры \"" + ListGenresToString(genresToDelete) + "\" удалены из базы данных.";
+                }
+
             }
+
+            
         }
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -345,7 +393,7 @@ namespace HomeLibrary
         {
             CreateBook(db);                                         // Добавляем новую книгу в базу данных.
             FillDataGridView(dataGridView1, db);                    // Заполняем элемент DataGridView информацией из базы даных.
-            dataGridView1.CurrentCell = 
+            dataGridView1.CurrentCell =
                 this.dataGridView1[1, dataGridView1.RowCount - 1];  // Выделяем последнюю строку в таблице элемента формы DataGridView.
         }
 
@@ -368,7 +416,7 @@ namespace HomeLibrary
         private void cbAuthor_DropDown(object sender, EventArgs e)
         {
             string currentText = cbAuthor.Text;
-            cbAuthor.DataSource = 
+            cbAuthor.DataSource =
                 db?.Authors.Select(a => a.Name).ToList();           // Заполняем элемент ComboBox списком имён всех авторов из базы даных.
             cbAuthor.Text = currentText;
         }
@@ -376,9 +424,14 @@ namespace HomeLibrary
         private void cbGenre_DropDown(object sender, EventArgs e)
         {
             string currentText = cbGenre.Text;
-            cbGenre.DataSource = 
+            cbGenre.DataSource =
                 db?.Genres.Select(g => g.Name).ToList();            // Заполняем элемент ComboBox списком всех жанров из базы даных.
             cbGenre.Text = currentText;
+        }
+
+        private void btnClearInfo_Click(object sender, EventArgs e)
+        {
+            ClearCurrentBook();                                     // Очищаем информацию о текущей книге.
         }
     }
 }
