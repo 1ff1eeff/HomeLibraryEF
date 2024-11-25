@@ -79,14 +79,14 @@ namespace HomeLibrary
             db?.Authors.Load();                                 // Загружаем таблицу, хранящую информацию об авторах, в память.
             db?.Genres.Load();                                  // Загружаем таблицу, хранящую информацию о жанрах, в память.
 
-            FillDataGridView(dataGridView1, db);                // Заполняем элемент DataGridView информацией из базы даных.
+            FillDataGridView(dataGridView1, db);                // Заполняем элемент DataGridView информацией из базы данных.
 
             cbAuthor.DataSource =
                 db.Authors.Select(a => a.Name).ToList();        // Помещаем все имена авторов из базы данных в элемент ComboBox.
             cbGenre.DataSource =
                 db.Genres.Select(g => g.Name).ToList();         // Помещаем все наименования жанров из базы данных в элемент ComboBox.
 
-            ClearCurrentBook();
+            ClearCurrentBook();                                 // Очищаем элементы формы, предназначенные для хранения информации о выбранной книге.
         }
 
         protected override void OnClosing(CancelEventArgs e)    // При закрытии формы.
@@ -97,7 +97,7 @@ namespace HomeLibrary
         }
 
         /// <summary>
-        /// Заполняем элемент DataGridView информацией из базы даных.
+        /// Заполняем элемент DataGridView информацией из базы данных.
         /// </summary>
         /// <param name="dgv">  Элемент DataGridView.   </param>
         /// <param name="db">   База даннх.             </param>
@@ -126,7 +126,7 @@ namespace HomeLibrary
                     string.Join(", ", [.. genres]);         // Преобразуем полученный список в строку, с разделителем: запятая и пробел после неё.
 
                 BookInfo selectedBook = new BookInfo();     // Объявляем и инициализируем экземпляр класса, предназначенного для хранения информации о книге. 
-                selectedBook.ID = b.Id.ToString();          // Заполняем поле, предназначенное для хранения идентефикационного номера книги в БД.
+                selectedBook.ID = b.Id.ToString();          // Заполняем поле, предназначенное для хранения первичного ключа книги из базы данных.
                 selectedBook.Name = b.Name;                 // Заполняем поле, предназначенное для хранения названия книги.
                 selectedBook.Author = b.Author.Name;        // Заполняем поле, предназначенное для хранения имени автора.
                 selectedBook.Genres = genresInOneLine;      // Заполняем поле, предназначенное для хранения списка жанров.
@@ -148,86 +148,6 @@ namespace HomeLibrary
             if (selectedRowIndex >= dgv.RowCount)           // Если номер выделенной строки равен или превышает общее количество строк.
                 selectedRowIndex--;                         // Уменьшаем значение номера выделенной строки на 1.
             dgv.CurrentCell = dgv[1, selectedRowIndex];     // Выделяем ячейку определённого номера строки.
-        }
-
-        /// <summary>
-        /// Формируем строку из полученного списка жанров.
-        /// </summary>
-        /// <param name="genres"> Список жанров. </param>
-        /// <returns> Строка, содержащая жанры. </returns>
-        private static string ListGenresToString(List<Genre> genres)
-        {
-            List<string> lines = new List<string>();        // Объявляем и инициализируем список строк для хранения  
-            foreach (Genre g in genres)                     // Для каждого жанра в списке жанров.
-                lines.Add(g.Name);                          // Добавляем наименование жанра в список.                           
-            string line = string.Join(", ", [.. lines]);    // Объединяем список в строку с разделителем: запятая и пробел после неё.
-
-            return line;
-        }
-
-        /// <summary>
-        /// Находим автора в базе данных.
-        /// </summary>
-        /// <param name="db">       Контекст базы данных.   </param>
-        /// <param name="name">     Имя автора.             </param>
-        /// <returns> Экземпляр класса Author.</returns>
-        private Author? FindAuthor(string name, HomeLibraryContext db)
-        {
-            IQueryable<Author> authors =
-                db.Authors.Where(a => a.Name == name);      // Находим авторов в базе данных, с именем равным значению полученного параметра "name".
-
-            Author? author = new();                         // Объявляем и инициализируем экземпляр класса Author, для хранения информации об авторе книги.
-            if (authors.Any())                              // Если найден хотя бы один автор.
-            {
-                author = authors.First();                   // Выбираем первого автора из списка.
-            }
-            else
-            {                                               // Иначе (если ни один автор не найден).
-                author = new Author();                      // Объявляем и инициализируем экземпляр класса Author, для хранения информации об авторе книги. 
-                author.Name = name;                         // Задаём значение параметра "name", как значение поля "Name" – имя автора.
-                db.Add(author);                             // Добавляем нового автора в базу данных.
-            }
-
-            return author;
-        }
-
-        /// <summary>
-        /// Находим выбранную книгу в базе данных.
-        /// </summary>
-        /// <returns> Экземпляр книги. </returns>
-        private Book? FindSelectedBook()
-        {
-            int index = dataGridView1.SelectedRows[0].Index;                    // Получаем значение номера выделенной строки в элементе DataGridView.
-            int id = 0;                                                         // Переменная для хранения значения ячейки столбца Id выделенной строки.
-            Int32.TryParse(dataGridView1[0, index].Value.ToString(), out id);   // Получаем значение Id из элемента DataGridView.
-                                                                                // Результат выводим в ранее созданную целочисленную переменную "id".
-            Book? book = new Book();                                            // Объявляем и инициализируем экземпляр класса Book.
-            book = db?.Books.Find(id);                                          // Находим запись с соответствующим значением поля Id в таблице Books.
-
-            return book;
-        }
-
-        /// <summary>
-        /// Заполняем элементы формы, предназначенные для хранения информации о выбранной книге.
-        /// </summary>
-        private void FillCurrentBook()
-        {
-            Book? book = FindSelectedBook();                    // Находим в базе данных книгу, соответствующую выделенной в DataGridView.
-            tbName.Text = book?.Name;                           // Помещаем информацию о наименовании книги из базы данных в поле Text элемента TextBox.
-            cbAuthor.Text = book?.Author.Name;                  // Помещаем информацию об авторе книги из базы данных в поле Text элемента ComboBox.
-            cbGenre.Text = ListGenresToString(book.Genres);     // Помещаем информацию о жанрах книги из базы данных в поле Text элемента ComboBox. 
-            rtbDescription.Text = book?.Description;            // Помещаем описание книги из базы данных в поле Text элемента RichTextBox.
-        }
-
-        /// <summary>
-        /// Очищаем элементы формы, предназначенные для хранения информации о выбранной книге.
-        /// </summary>
-        private void ClearCurrentBook()
-        {
-            tbName.Text = string.Empty;                         // Удаляем текст из элемента TextBox.
-            cbAuthor.Text = string.Empty;                       // Удаляем текст из элемента ComboBox.
-            cbGenre.Text = string.Empty;                        // Удаляем текст из элемента ComboBox.
-            rtbDescription.Text = string.Empty;                 // Удаляем текст из элемента RichTextBox.
         }
 
         /// <summary>
@@ -367,7 +287,7 @@ namespace HomeLibrary
                 }
 
                 result = db?.SaveChanges();                         // Сохраняем внесённые в базу данных изменения. 
-                                                                    
+
                 if (result > 0)
                 {
                     // Информируем пользователя об удалении записи жанра из базы данных. 
@@ -378,11 +298,90 @@ namespace HomeLibrary
                     if (genresToDelete.Count > 1)
                         label6.Text += " Жанры \"" + ListGenresToString(genresToDelete) + "\" удалены из базы данных.";
                 }
+            }
+        }
 
+        /// <summary>
+        /// Формируем строку из полученного списка жанров.
+        /// </summary>
+        /// <param name="genres"> Список жанров. </param>
+        /// <returns> Строка, содержащая жанры. </returns>
+        private static string ListGenresToString(List<Genre> genres)
+        {
+            List<string> lines = new List<string>();        // Объявляем и инициализируем список строк для хранения  
+            foreach (Genre g in genres)                     // Для каждого жанра в списке жанров.
+                lines.Add(g.Name);                          // Добавляем наименование жанра в список.                           
+            string line = string.Join(", ", [.. lines]);    // Объединяем список в строку с разделителем: запятая и пробел после неё.
+
+            return line;
+        }
+
+        /// <summary>
+        /// Находим автора в базе данных.
+        /// </summary>
+        /// <param name="db">       Контекст базы данных.   </param>
+        /// <param name="name">     Имя автора.             </param>
+        /// <returns> Экземпляр класса Author.</returns>
+        private Author? FindAuthor(string name, HomeLibraryContext db)
+        {
+            IQueryable<Author> authors =
+                db.Authors.Where(a => a.Name == name);      // Находим авторов в базе данных, с именем равным значению полученного параметра "name".
+
+            Author? author = new();                         // Объявляем и инициализируем экземпляр класса Author, для хранения информации об авторе книги.
+            if (authors.Any())                              // Если найден хотя бы один автор.
+            {
+                author = authors.First();                   // Выбираем первого автора из списка.
+            }
+            else
+            {                                               // Иначе (если ни один автор не найден).
+                author = new Author();                      // Объявляем и инициализируем экземпляр класса Author, для хранения информации об авторе книги. 
+                author.Name = name;                         // Задаём значение параметра "name", как значение поля "Name" – имя автора.
+                db.Add(author);                             // Добавляем нового автора в базу данных.
             }
 
-            
+            return author;
         }
+
+        /// <summary>
+        /// Находим выделенную в таблице книгу в базе данных.
+        /// </summary>
+        /// <returns> Экземпляр книги. </returns>
+        private Book? FindSelectedBook()
+        {
+            int index = dataGridView1.SelectedRows[0].Index;                    // Получаем значение номера выделенной строки в элементе DataGridView.
+            int id = 0;                                                         // Переменная для хранения значения ячейки столбца Id выделенной строки.
+            Int32.TryParse(dataGridView1[0, index].Value.ToString(), out id);   // Получаем значение Id из элемента DataGridView.
+                                                                                // Результат выводим в ранее созданную целочисленную переменную "id".
+            Book? book = new Book();                                            // Объявляем и инициализируем экземпляр класса Book.
+            book = db?.Books.Find(id);                                          // Находим запись с соответствующим значением поля Id в таблице Books.
+
+            return book;
+        }
+
+        /// <summary>
+        /// Заполняем элементы формы, предназначенные для хранения информации о выбранной книге.
+        /// </summary>
+        private void FillCurrentBook()
+        {
+            Book? book = FindSelectedBook();                    // Находим в базе данных книгу, соответствующую выделенной в DataGridView.
+            tbName.Text = book?.Name;                           // Помещаем информацию о наименовании книги из базы данных в поле Text элемента TextBox.
+            cbAuthor.Text = book?.Author.Name;                  // Помещаем информацию об авторе книги из базы данных в поле Text элемента ComboBox.
+            cbGenre.Text = ListGenresToString(book.Genres);     // Помещаем информацию о жанрах книги из базы данных в поле Text элемента ComboBox. 
+            rtbDescription.Text = book?.Description;            // Помещаем описание книги из базы данных в поле Text элемента RichTextBox.
+        }
+
+        /// <summary>
+        /// Очищаем элементы формы, предназначенные для хранения информации о выбранной книге.
+        /// </summary>
+        private void ClearCurrentBook()
+        {
+            tbName.Text = string.Empty;                         // Удаляем текст из элемента TextBox.
+            cbAuthor.Text = string.Empty;                       // Удаляем текст из элемента ComboBox.
+            cbGenre.Text = string.Empty;                        // Удаляем текст из элемента ComboBox.
+            rtbDescription.Text = string.Empty;                 // Удаляем текст из элемента RichTextBox.
+        }
+
+        
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -392,7 +391,7 @@ namespace HomeLibrary
         private void btnCreate_Click(object sender, EventArgs e)
         {
             CreateBook(db);                                         // Добавляем новую книгу в базу данных.
-            FillDataGridView(dataGridView1, db);                    // Заполняем элемент DataGridView информацией из базы даных.
+            FillDataGridView(dataGridView1, db);                    // Заполняем элемент DataGridView информацией из базы данных.
             dataGridView1.CurrentCell =
                 this.dataGridView1[1, dataGridView1.RowCount - 1];  // Выделяем последнюю строку в таблице элемента формы DataGridView.
         }
@@ -400,38 +399,35 @@ namespace HomeLibrary
         private void btnUpdate_Click(object sender, EventArgs e)
         {
             UpdateBook(db);                                         // Модифицируем данные выбранной книги в базе данных.
-            FillDataGridView(dataGridView1, db);                    // Заполняем элемент DataGridView информацией из базы даных.
+            FillDataGridView(dataGridView1, db);                    // Заполняем элемент DataGridView информацией из базы данных.
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
             DeleteBook(db);                                         // Удаляем выбранную книгу из базы данных.
-            FillDataGridView(dataGridView1, db);                    // Заполняем элемент DataGridView информацией из базы даных.
-            if (dataGridView1.RowCount > 0)
-            {
-                FillCurrentBook();                                  // Заполняем элементы формы, предназначенные для хранения информации о выбранной книге.
-            }
+            FillDataGridView(dataGridView1, db);                    // Заполняем элемент DataGridView информацией из базы данных.
+            ClearCurrentBook();                                     // Очищаем элементы формы, предназначенные для хранения информации о выбранной книге.
         }
 
         private void cbAuthor_DropDown(object sender, EventArgs e)
         {
-            string currentText = cbAuthor.Text;
+            string currentText = cbAuthor.Text;                     // Сохраняем текущий текст элемента ComboBox, содержащий имя автора книги.
             cbAuthor.DataSource =
-                db?.Authors.Select(a => a.Name).ToList();           // Заполняем элемент ComboBox списком имён всех авторов из базы даных.
-            cbAuthor.Text = currentText;
+                db?.Authors.Select(a => a.Name).ToList();           // В качестве источника данных передаём список имён авторов из базы данных.
+            cbAuthor.Text = currentText;                            // Восстанавливаем текст элемента ComboBox.
         }
 
         private void cbGenre_DropDown(object sender, EventArgs e)
         {
-            string currentText = cbGenre.Text;
+            string currentText = cbGenre.Text;                      // Сохраняем текущий текст элемента ComboBox, содержащий жанр книги.
             cbGenre.DataSource =
-                db?.Genres.Select(g => g.Name).ToList();            // Заполняем элемент ComboBox списком всех жанров из базы даных.
-            cbGenre.Text = currentText;
+                db?.Genres.Select(g => g.Name).ToList();            // В качестве источника данных передаём список наименований жанров из базы данных.
+            cbGenre.Text = currentText;                             // Восстанавливаем текст данного элемента.
         }
 
         private void btnClearInfo_Click(object sender, EventArgs e)
         {
-            ClearCurrentBook();                                     // Очищаем информацию о текущей книге.
+            ClearCurrentBook();                                     // Очищаем элементы формы на панели «Текущая книга».
         }
     }
 }
